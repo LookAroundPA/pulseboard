@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import TweetCard from "@/components/TweetCard";
 import type { XTweet, XUser } from "@/lib/x-api";
 
@@ -10,6 +10,23 @@ export default function SearchPage() {
   const [users, setUsers] = useState<Record<string, XUser>>({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function loadCached() {
+      try {
+        const res = await fetch("/api/search");
+        const data = await res.json();
+        if (data.keyword) {
+          setQuery(data.keyword);
+          setTweets(data.tweets);
+          setUsers(data.users);
+        }
+      } catch {
+        // ignore — cache is a nice-to-have, not required for the page to work
+      }
+    }
+    loadCached();
+  }, []);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
